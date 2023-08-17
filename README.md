@@ -23,13 +23,24 @@ explore using foundry as an alternative
 
 Install Nix if you haven't already ([instructions](https://nixos.org/download.html)). Then install dapptools:
 
+### With flakes
+
+```
+nix profile install github:dapphub/dapptools#{dapp,ethsign,hevm,seth}
+```
+
+Nix will offer to use the dapptools binary cache, which will speed up installs,
+but requires you to trust both us and the Cachix infrastructure.
+
+### Legacy
+
 ```
 curl https://dapp.tools/install | sh
 ```
 
 This configures the dapphub binary cache and installs the `dapp`, `solc`, `seth` and `hevm` executables.
 
-**NOTE:** Arm support in the GHC haskell compiiler is still fairly bleeding edge, until this
+**NOTE:** Arm support in the GHC haskell compiler is still fairly bleeding edge, until this
 situation stabilises, users of M1 macs must run dapptools (and the installer!) under rosetta 2 (i.e.
 as an emulated x86 program). Make sure `/etc/nix/nix.conf` contains `system = x86_64-darwin`.
 

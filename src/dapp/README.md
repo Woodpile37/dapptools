@@ -50,6 +50,7 @@ Let's create a new `dapp` project. We make a new directory and initialize the `d
 
 ```sh
 mkdir dapptutorial
+cd dapptutorial
 dapp init
 ```
 
@@ -87,6 +88,9 @@ Compile the contract by running `dapp build`. If you didn't make any mistakes, y
 Let's write some tests for our vault. Change `Dapptutorial.t.sol` to the following. We'll go over whats going on in the next paragraph.
 
 ```solidity
+import {DSTest} from "ds-test/test.sol";
+import {Dapptutorial} from "./Dapptutorial.sol";
+
 contract DapptutorialTest is DSTest {
     Dapptutorial dapptutorial;
 
@@ -110,8 +114,8 @@ contract DapptutorialTest is DSTest {
         assertEq(preBalance + 1 ether, postBalance);
     }
 
-    receive() external payable {
-    }
+    // allow sending eth to the test contract
+    receive() external payable {}
 }
 ```
 
@@ -314,6 +318,7 @@ variables](../hevm/README.md#environment-variables).
 | `DAPP_REMAPPINGS`          | `$(dapp remappings)`       | [Solidity remappings](https://docs.soliditylang.org/en/latest/using-the-compiler.html#path-remapping)                                              |
 | `DAPP_BUILD_OPTIMIZE`      | `0`                        | Activate Solidity optimizer (`0` or `1`)                                                                                                           |
 | `DAPP_BUILD_OPTIMIZE_RUNS` | `200`                      | Set the optimizer runs                                                                                                                             |
+| `DAPP_VIA_IR`              | `0`                        | Change compilation pipeline to go through the Yul intermediate representation (`0` or `1`)                                                                                                           |
 | `DAPP_TEST_MATCH`          | n/a                        | Only run test methods matching a regex                                                                                                             |
 | `DAPP_TEST_VERBOSITY`      | `0`                        | Sets how much detail `dapp test` logs. Verbosity `1` shows traces for failing tests, `2` shows logs for all tests, `3` shows traces for all tests  |
 | `DAPP_TEST_FFI `           | `0`                        | Allow use of the ffi cheatcode in tests (`0` or `1`)                                                                                               |
@@ -407,6 +412,7 @@ installing `ds-test` and creating two boilerplate contracts in the `src` directo
         name collisions. This is provided for compatibility with older
         workflows.
     --optimize: activate the solidity optimizer.
+    --via-ir: change compilation pipeline to go through the Yul intermediate representation
     --legacy:   Compile using the `--combined-json` flag. Some options are
         missing from this format. This is provided for compatibility with older
         workflows.

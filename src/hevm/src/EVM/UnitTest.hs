@@ -694,9 +694,11 @@ symRun opts@UnitTestOptions{..} concreteVm testName types = do
         SBV.resetAssertions
         constrain $ sAnd (fst <$> view EVM.constraints vm')
         unless bailed $
-          case view result vm' of
-            Just (VMSuccess (SymbolicBuffer buf)) ->
-              constrain $ litBytes (encodeAbiValue $ AbiBool $ not shouldFail) .== buf
+          let
+            checkResult buf = constrain $ litBytes (encodeAbiValue $ AbiBool $ not shouldFail) .== buf
+          in case view result vm' of
+            Just (VMSuccess (SymbolicBuffer buf)) -> checkResult buf
+            Just (VMSuccess (ConcreteBuffer buf)) -> checkResult (litBytes buf)
             r -> error $ "unexpected return value: " ++ show r
         checkSat >>= \case
           Sat -> do
@@ -768,10 +770,14 @@ execSymTest opts@UnitTestOptions{ .. } method cd = do
   Stepper.runFully >>= \vm' -> case view result vm' of
     Just (VMFailure err) ->
       -- If we failed, put the error in the trace.
-      Stepper.evm (pushTrace (ErrorTrace err)) >> (pure (True, vm'))
+      Stepper.evm (pushTrace (ErrorTrace err)) >> pure (True, vm')
     Just (VMSuccess _) -> do
       postVm <- checkSymFailures opts
-      pure (False, postVm)
+      -- calls to failed() contain reverting branches since https://github.com/dapphub/ds-test/pull/30
+      case view result postVm of
+        Just (VMSuccess _) -> pure (False, postVm)
+        Just (VMFailure _) -> pure (True, postVm)
+        r -> error $ "unexpected return value after call to failed(): " ++ show r
     Nothing -> error "Internal Error: execSymTest: vm has not completed execution!"
 
 checkSymFailures :: UnitTestOptions -> Stepper VM
